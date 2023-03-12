@@ -6,27 +6,12 @@
 
 #include "ax25_payload.h"
 #include "kiss.h"
+#include "config.h"
 
 // app config
-#define CFG_ENABLE_DEBUG
 #define CFG_LOOP_DELAY_MS     20
 #define CFG_SERIAL_BAUD_RATE  19200
 #define CFG_MAX_PACKET_SIZE   255
-#define CFG_MY_CALLSIGN       "N0CALL-11"
-
-// lora pinouts
-#define CFG_LORA_PIN_NSS      5
-#define CFG_LORA_PIN_RST      4
-#define CFG_LORA_PIN_DIO0     3
-#define CFG_LORA_PIN_DIO1     2
-
-// lora modulation
-#define CFG_LORA_FREQ         433.750E6
-#define CFG_LORA_SYNC_WORD    0x12
-#define CFG_LORA_BW           31.25e3
-#define CFG_LORA_SF           7
-#define CFG_LORA_CR           6
-#define CFG_LORA_PWR          10
 
 // kiss parameters
 #define DEFAULT_P             255
