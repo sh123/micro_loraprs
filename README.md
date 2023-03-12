@@ -11,10 +11,10 @@ Can be build in two modes:
 - As USB KISS LoRA modem, to be used with Linux AX.25 tools over USB or with APRSDroid or Codec2Talkie applications over USB OTG
 - As a standalone LoRA AX.25 digirepeater
 
-## Configuration
+## Configure
 Update `include/config.h` with your LoRA modulation settings and module pinouts.
 
-## Buildings
+## Build
 Use platformio to build required configuration for repeater or modem.
 
 ## Photos
