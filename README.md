@@ -7,3 +7,5 @@ Can be build in two modes:
 - As a standalone AX.25 digirepeater
 
 ![Device](extras/images/digirepeater.jpg)
+
+![Board](extras/images/board.jpg)
