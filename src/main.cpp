@@ -37,7 +37,7 @@ byte pktBufTx_[CFG_MAX_PACKET_SIZE];
 byte pktBufRx_[CFG_MAX_PACKET_SIZE];
 int pktBufTxIndex_ = 0;
 
-// is rate
+// receive isr parameters
 volatile bool isRxIsrEnabled_ = true;
 volatile bool isLoraRxDataAvailable_ = false;
 
@@ -56,7 +56,7 @@ void isrRxDataAvailable(void)
     isLoraRxDataAvailable_ = true;
 }
 
-// enter deep sleep until packet is received
+// enter deep sleep until packet is received (for low power digirepeating)
 void enterDeepSleep() 
 {
   LOG_INFO(F("Enter sleep"));
@@ -93,7 +93,7 @@ void setupRadio(long loraFreq, long bw, int sf, int cr, int pwr, int sync, int c
   }
 }
 
-// arduino setup
+// arduino default setup
 void setup() 
 {
   // setup serial
@@ -112,12 +112,14 @@ void setup()
 #endif  
   LOG_SET_OPTION(false, false, true);  // disable file, line, enable func
 
-  // setup radio with default arguments
+  // setup radio with default parameters
   setupRadio(CFG_LORA_FREQ, CFG_LORA_BW, CFG_LORA_SF, 
     CFG_LORA_CR, CFG_LORA_PWR, CFG_LORA_SYNC_WORD, 
     CFG_LORA_CRC, CFG_LORA_EXPLICIT);
 
   LOG_INFO(F("Started"));
+
+  // save power by going sleep in digirepeater mode
 #ifndef CFG_USE_MODEM
   enterDeepSleep();
 #endif
