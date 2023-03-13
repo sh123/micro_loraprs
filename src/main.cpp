@@ -207,14 +207,13 @@ void processLoraPacketAsModem()
   Serial.write(Kiss::Marker::Fend);
 }
 
-
 // set hardware from current buffer
 void kissSetHardware(int packetSize) 
 {
-  if (packetSize == sizeof(Kiss::SetHardware)) {
+  if (packetSize == CFG_KISS_SET_HARDWARE_SIZE) {
     const struct Kiss::SetHardware * setHardware = reinterpret_cast<const struct Kiss::SetHardware*>(pktBufTx_);
     setupRadio(
-      be32toh(setHardware->freq), 
+      be32toh(setHardware->freq),
       be32toh(setHardware->bw), 
       be16toh(setHardware->sf), 
       be16toh(setHardware->cr), 
@@ -305,8 +304,11 @@ void kissProcess(byte rxByte)
           }
           kissState_ = Kiss::State::GetStart;
           break;
+        // new byte is read
         default:
-          pktBufTx_[pktBufTxIndex_++] = rxByte;
+          if (kissDataType_ == Kiss::DataType::Raw ||
+              kissDataType_ == Kiss::DataType::Control)
+            pktBufTx_[pktBufTxIndex_++] = rxByte;
           break;
       }
       break;

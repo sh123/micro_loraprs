@@ -34,6 +34,8 @@ enum DataType {
   None = 0x80
 };
 
+#define CFG_KISS_SET_HARDWARE_SIZE  17
+
 struct SetHardware {
   uint32_t freq;
   uint32_t bw;
