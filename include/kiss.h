@@ -1,3 +1,6 @@
+#ifndef KISS_H
+#define KISS_H
+
 namespace Kiss {
 
 enum Marker {
@@ -21,7 +24,26 @@ enum Cmd {
   Data = 0x00,
   P = 0x02,
   SlotTime = 0x03,
+  SetHardware = 0x06,
   NoCmd = 0x80
 };
 
-}
+enum DataType {
+  Raw = 0,
+  Control,
+  None = 0x80
+};
+
+struct SetHardware {
+  uint32_t freq;
+  uint32_t bw;
+  uint16_t sf;
+  uint16_t cr;
+  uint16_t pwr;
+  uint16_t sync;
+  uint8_t crc;
+} __attribute__((packed));
+
+} // Kiss
+
+#endif // KISS_H
