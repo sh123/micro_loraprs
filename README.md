@@ -1,7 +1,7 @@
 # Arduino Micro LoRA KISS modem and APRS AX.25 digirepeater
 
 ## Introduction
-This project is a standalone Arduino Micro LoRA USB KISS modem and APRS AX.25 digirepeater with RA-01 LoRA module. 
+This project is Arduino Micro LoRA USB KISS modem and standalone APRS AX.25 digirepeater with RA-01 LoRA module. 
 
 Probably, could be easily used with other Arduino boards.
 
