@@ -10,6 +10,7 @@
 #define CFG_LORA_PWR          10
 #define CFG_LORA_CRC          1
 #define CFG_LORA_EXPLICIT     true
+#define CFG_LORA_PREAMBLE     8
 
 // lora pinouts
 #define CFG_LORA_PIN_NSS      5

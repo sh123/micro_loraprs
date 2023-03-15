@@ -83,6 +83,7 @@ void setupRadio(long loraFreq, long bw, int sf, int cr, int pwr, int sync, int c
   else
     radio_.implicitHeader(0xff);
   radio_.setCRC(crcBytes);
+  radio_.setPreambleLength(CFG_LORA_PREAMBLE);
   radio_.setDio0Action(isrRxDataAvailable);
 
   // start lora receive
