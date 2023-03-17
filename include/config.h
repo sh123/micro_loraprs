@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 // lora default parameters
-#define CFG_LORA_FREQ         433.725E6
+#define CFG_LORA_FREQ         433.775E6
 #define CFG_LORA_SYNC_WORD    0x12
 #define CFG_LORA_BW           125.00e3
 #define CFG_LORA_SF           7
