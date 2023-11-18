@@ -384,7 +384,7 @@ void processLoraPacketAsRpt()
   // parse packet
   AX25::Payload payload(pktBufRx_, packetLength);
   if (!payload.IsValid()) {
-    LOG_WARN(F("Not ax25"));
+    LOG_WARN(F("Not AX25"));
     return;
   }
   payload.Dump();
