@@ -59,23 +59,24 @@ void isrRxDataAvailable(void)
 // enter deep sleep until packet is received (for low power digirepeating)
 void enterDeepSleep() 
 {
-  LOG_INFO(F("Enter sleep"));
+  LOG_INFO(F("Sleep"));
   sleep_enable();
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   digitalWrite(LED_BUILTIN, LOW);
   delay(1000);
   sleep_cpu();
   digitalWrite(LED_BUILTIN, HIGH);
-  LOG_INFO(F("Exit sleep"));
+  LOG_INFO(F("Unsleep"));
 }
 
 // configura radio with given parameters
+#if CFG_MOD == CFG_MOD_LORA
 void setupRadio(long loraFreq, long bw, int sf, int cr, int pwr, int sync, int crcBytes, bool isExplicit) 
 {
   // setup lora
   int state = radio_.begin((float)loraFreq / 1e6, (float)bw / 1e3, sf, cr, sync, pwr);
   if (state != RADIOLIB_ERR_NONE) {
-    LOG_ERROR(F("Radio start failure"), state);
+    LOG_ERROR(F("Radio failed"), state);
     while(true);
   }
   if (isExplicit && sf > 6)
@@ -85,33 +86,23 @@ void setupRadio(long loraFreq, long bw, int sf, int cr, int pwr, int sync, int c
   radio_.setCRC(crcBytes);
   radio_.setPreambleLength(CFG_LORA_PREAMBLE);
   radio_.setDio0Action(isrRxDataAvailable);
-
-  // start lora receive
-  state = radio_.startReceive();
-  if (state != RADIOLIB_ERR_NONE) {
-    LOG_ERROR(F("Receive start error:"), state);
-    while(true);
-  }
+  radio_.startReceive();
 }
+#endif
 
 // configura radio with given parameters
+#if CFG_MOD == CFG_MOD_FSK
 void setupRadioFsk(long loraFreq, float bitRate, float freqDev, float rxBw, int pwr)
 {
   // setup lora
   int state = radio_.beginFSK((float)loraFreq / 1e6, bitRate, freqDev, rxBw, pwr);
   if (state != RADIOLIB_ERR_NONE) {
-    LOG_ERROR(F("Radio start failure"), state);
-    while(true);
+    return;
   }
   radio_.setDio0Action(isrRxDataAvailable);
-
-  // start lora receive
-  state = radio_.startReceive();
-  if (state != RADIOLIB_ERR_NONE) {
-    LOG_ERROR(F("Receive start error:"), state);
-    while(true);
-  }
+  radio_.startReceive();
 }
+#endif
 
 // arduino default setup
 void setup() 
@@ -162,25 +153,19 @@ size_t receiveLoraPacket()
     return 0;
   }
   if (packetLength > CFG_MAX_PACKET_SIZE) {
-    LOG_ERROR(F("Packet size is too large:"), packetLength);
+    //LOG_ERROR(F("Packet size is too large:"), packetLength);
     packetLength = 0;
   } else {
     // read packet
     int state = radio_.readData(pktBufRx_, packetLength);
     if (state != RADIOLIB_ERR_NONE) {
-      LOG_ERROR(F("Read pkt error:"), state);
+      //LOG_ERROR(F("Read pkt error:"), state);
       packetLength = 0;
     }
   }
 
   isLoraRxDataAvailable_ = false;
-
-  // start lora receive
-  int state = radio_.startReceive();
-  if (state != RADIOLIB_ERR_NONE) {
-    LOG_ERROR(F("Receive start error:"), state);
-  }
-
+  radio_.startReceive();
   return packetLength;
 }
 
@@ -192,17 +177,12 @@ void sendLoraPacket(size_t packetLength)
   // send out 
   int state = radio_.transmit(pktBufTx_, packetLength);
   if (state != RADIOLIB_ERR_NONE) {
-    LOG_ERROR(F("Failed to transmit"), state);
+    //LOG_ERROR(F("Failed to transmit"), state);
   }
   radio_.finishTransmit();
 
   isRxIsrEnabled_ = true;
-
-  // start lora receive
-  state = radio_.startReceive();
-  if (state != RADIOLIB_ERR_NONE) {
-    LOG_ERROR(F("Receive start error:"), state);
-  }
+  radio_.startReceive();
 }
 
 // read lora packet and transfer to modem
@@ -396,21 +376,21 @@ void processLoraPacketAsRpt()
   // parse packet
   AX25::Payload payload(pktBufRx_, packetLength);
   if (!payload.IsValid()) {
-    LOG_WARN(F("Failed to parse rx packet, not ax25"));
+    LOG_WARN(F("Not ax25"));
     return;
   }
   payload.Dump();
 
   // digireat
   if (!payload.Digirepeat(myCallsign_)) {
-    LOG_INFO(F("Digirepeating skipped"));
+    LOG_INFO(F("RPT skip"));
     return;
   }
 
   // serialize to ax25 packet
   int txPacketLength = payload.ToBinary(pktBufRx_, CFG_MAX_PACKET_SIZE);
   if (txPacketLength <= 0) {
-    LOG_WARN(F("Failed to convert to AX25 to binary"));
+    LOG_WARN(F("AX25 to bin fail"));
     return;
   }
 
