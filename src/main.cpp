@@ -214,11 +214,11 @@ void kissSetHardware(int packetSize)
   if (packetSize == CFG_KISS_SET_HARDWARE_SIZE) {
     const struct Kiss::SetHardware * setHardware = reinterpret_cast<const struct Kiss::SetHardware*>(pktBufTx_);
     setupRadio(
-      be32toh(setHardware->freq),
+      be32toh(setHardware->freqRx),
       be32toh(setHardware->bw), 
       be16toh(setHardware->sf), 
       be16toh(setHardware->cr), 
-      be16toh(setHardware->pwr), 
+      (int16_t)be16toh(setHardware->pwr),
       be16toh(setHardware->sync), 
       setHardware->crc ? CFG_LORA_CRC : 0,
       CFG_LORA_EXPLICIT);
