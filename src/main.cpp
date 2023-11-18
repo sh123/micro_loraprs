@@ -94,6 +94,25 @@ void setupRadio(long loraFreq, long bw, int sf, int cr, int pwr, int sync, int c
   }
 }
 
+// configura radio with given parameters
+void setupRadioFsk(long loraFreq, float bitRate, float freqDev, float rxBw, int pwr)
+{
+  // setup lora
+  int state = radio_.beginFSK((float)loraFreq / 1e6, bitRate, freqDev, rxBw, pwr);
+  if (state != RADIOLIB_ERR_NONE) {
+    LOG_ERROR(F("Radio start failure"), state);
+    while(true);
+  }
+  radio_.setDio0Action(isrRxDataAvailable);
+
+  // start lora receive
+  state = radio_.startReceive();
+  if (state != RADIOLIB_ERR_NONE) {
+    LOG_ERROR(F("Receive start error:"), state);
+    while(true);
+  }
+}
+
 // arduino default setup
 void setup() 
 {
@@ -114,9 +133,16 @@ void setup()
   LOG_SET_OPTION(false, false, true);  // disable file, line, enable func
 
   // setup radio with default parameters
+#if CFG_MOD == CFG_MOD_LORA
   setupRadio(CFG_LORA_FREQ, CFG_LORA_BW, CFG_LORA_SF, 
     CFG_LORA_CR, CFG_LORA_PWR, CFG_LORA_SYNC_WORD, 
     CFG_LORA_CRC, CFG_LORA_EXPLICIT);
+#elif CFG_MOD == CFG_MOD_FSK
+  setupRadioFsk(CFG_LORA_FREQ, CFG_FSK_BIT_RATE, 
+    CFG_FSK_FREQ_DEV, CFG_FSK_RX_BW, CFG_LORA_PWR);
+#else
+#error "Unknown modulation type"
+#endif
 
   LOG_INFO(F("Started"));
 
@@ -213,15 +239,28 @@ void kissSetHardware(int packetSize)
 {
   if (packetSize == CFG_KISS_SET_HARDWARE_SIZE) {
     const struct Kiss::SetHardware * setHardware = reinterpret_cast<const struct Kiss::SetHardware*>(pktBufTx_);
-    setupRadio(
-      be32toh(setHardware->freqRx),
-      be32toh(setHardware->bw), 
-      be16toh(setHardware->sf), 
-      be16toh(setHardware->cr), 
-      (int16_t)be16toh(setHardware->pwr),
-      be16toh(setHardware->sync), 
-      setHardware->crc ? CFG_LORA_CRC : 0,
-      CFG_LORA_EXPLICIT);
+    if (setHardware->modType == CFG_MOD_LORA) {
+#if CFG_MOD == CFG_MOD_LORA
+      setupRadio(
+        be32toh(setHardware->freqRx),
+        be32toh(setHardware->bw), 
+        be16toh(setHardware->sf), 
+        be16toh(setHardware->cr), 
+        (int16_t)be16toh(setHardware->pwr),
+        be16toh(setHardware->sync), 
+        setHardware->crc ? CFG_LORA_CRC : 0,
+        CFG_LORA_EXPLICIT);
+#endif
+    } else if (setHardware->modType == CFG_MOD_FSK) {
+#if CFG_MOD == CFG_MOD_FSK
+      setupRadioFsk(
+        be32toh(setHardware->freqRx),
+        (float)be32toh(setHardware->fskBitRate) / 1e3,
+        (float)be32toh(setHardware->fskFreqDev) / 1e3,
+        (float)be32toh(setHardware->fskRxBw) / 1e3,
+        (int16_t)be16toh(setHardware->pwr));
+#endif
+    }
   }
 }
 
