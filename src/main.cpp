@@ -26,6 +26,14 @@
 #pragma message("Configured for digirepeater")
 #endif
 
+#if CFG_MOD == CFG_MOD_LORA
+#pragma message("Configured for LoRa modulation")
+#elif CFG_MOD == CFG_MOD_FSK
+#pragma message("Configured for FSK modulation")
+#else
+#error "Unknown modulation type"
+#endif
+
 // peripherals
 SX1278 radio_ = new Module(CFG_LORA_PIN_NSS, CFG_LORA_PIN_DIO0, CFG_LORA_PIN_RST, CFG_LORA_PIN_DIO1);
 
