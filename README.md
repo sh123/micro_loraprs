@@ -1,15 +1,15 @@
 # Arduino Micro LoRA KISS modem and APRS AX.25 digirepeater
 
 ## Introduction
-This project is Arduino Micro LoRA USB KISS modem and standalone APRS AX.25 digirepeater with RA-01 LoRA module. 
+This project is Arduino Micro LoRA/FSK USB KISS modem and standalone APRS AX.25 digirepeater with RA-01 LoRA module. 
 
 Probably, could be easily used with other Arduino boards.
 
 Currently, default radio module is SX1278, such as RA-01/RA-02.
 
 Can be build in two modes:
-- As USB KISS LoRA modem, to be used with Linux AX.25 tools over USB or with APRSDroid or Codec2Talkie applications over USB OTG
-- As a standalone LoRA AX.25 digirepeater
+- As USB KISS LoRA/FSK modem, to be used with Linux AX.25 tools over USB or with APRSDroid or Codec2Talkie applications over USB OTG
+- As a standalone LoRA/FSK AX.25 digirepeater
 
 ## Configure
 Update `include/config.h` with your LoRA modulation settings and module pinouts.
