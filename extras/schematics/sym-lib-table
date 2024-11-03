@@ -1,3 +1,4 @@
 (sym_lib_table
-  (lib (name micro)(type Legacy)(uri ${KIPRJMOD}/ProMicroKiCad/promicro_library/promicro.lib)(options "")(descr ""))
+  (lib (name "micro")(type "Legacy")(uri "${KIPRJMOD}/ProMicroKiCad/promicro_library/promicro.lib")(options "")(descr ""))
+  (lib (name "lora_digirepeater_micro-rescue")(type "Legacy")(uri "${KIPRJMOD}/lora_digirepeater_micro-rescue.lib")(options "")(descr ""))
 )
