@@ -4,6 +4,8 @@
 // radio module parameters
 #define CFG_LORA_FREQ         433.775E6
 #define CFG_LORA_PWR          10
+#define CFG_LORA_PWR_MIN      2
+#define CFG_LORA_PWR_MAX      20
 
 // modulation selection
 #define CFG_MOD_LORA          0

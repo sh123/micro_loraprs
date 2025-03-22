@@ -14,6 +14,9 @@
 #define CFG_SERIAL_BAUD_RATE  19200
 #define CFG_MAX_PACKET_SIZE   255
 
+// leds
+#define CFG_STATUS_LED        17
+
 // kiss parameters
 #define DEFAULT_P             255
 #define DEFAULT_SLOT_TIME     0
@@ -77,6 +80,17 @@ void enterDeepSleep()
   LOG_INFO(F("Unsleep"));
 }
 
+void fatalWithLedStatus(int state) 
+{
+  LOG_ERROR(F("Radio failed"), state);
+  while(true) {
+    digitalWrite(CFG_STATUS_LED, HIGH);
+    delay(200);
+    digitalWrite(CFG_STATUS_LED, LOW);
+    delay(200);
+  };
+}
+
 // configura radio with given parameters
 #if CFG_MOD == CFG_MOD_LORA
 void setupRadio(long loraFreq, long bw, int sf, int cr, int pwr, int sync, int crcBytes, bool isExplicit) 
@@ -84,8 +98,7 @@ void setupRadio(long loraFreq, long bw, int sf, int cr, int pwr, int sync, int c
   // setup lora
   int state = radio_.begin((float)loraFreq / 1e6, (float)bw / 1e3, sf, cr, sync, pwr);
   if (state != RADIOLIB_ERR_NONE) {
-    LOG_ERROR(F("Radio failed"), state);
-    while(true);
+    fatalWithLedStatus(state);
   }
   if (isExplicit && sf > 6)
     radio_.explicitHeader();
@@ -105,7 +118,7 @@ void setupRadioFsk(long loraFreq, float bitRate, float freqDev, float rxBw, int 
   // setup lora
   int state = radio_.beginFSK((float)loraFreq / 1e6, bitRate, freqDev, rxBw, pwr);
   if (state != RADIOLIB_ERR_NONE) {
-    return;
+    fatalWithLedStatus(state);
   }
   radio_.setDio0Action(isrRxDataAvailable);
   radio_.startReceive();
@@ -120,6 +133,9 @@ void setup()
   Serial.begin(CFG_SERIAL_BAUD_RATE);
   while (!Serial);
 #endif
+
+  // status led 
+  pinMode(CFG_STATUS_LED, OUTPUT);
 
   // setup logging
 #ifdef CFG_ENABLE_DEBUG
@@ -227,6 +243,9 @@ void kissSetHardware(int packetSize)
 {
   if (packetSize == CFG_KISS_SET_HARDWARE_SIZE) {
     const struct Kiss::SetHardware * setHardware = reinterpret_cast<const struct Kiss::SetHardware*>(pktBufTx_);
+    int pwr = (int16_t)be16toh(setHardware->pwr);
+    pwr = pwr < CFG_LORA_PWR_MIN ? CFG_LORA_PWR_MIN
+        : pwr > CFG_LORA_PWR_MAX ? CFG_LORA_PWR_MAX : pwr;
     if (setHardware->modType == CFG_MOD_LORA) {
 #if CFG_MOD == CFG_MOD_LORA
       setupRadio(
@@ -234,7 +253,7 @@ void kissSetHardware(int packetSize)
         be32toh(setHardware->bw), 
         be16toh(setHardware->sf), 
         be16toh(setHardware->cr), 
-        (int16_t)be16toh(setHardware->pwr),
+        pwr,
         be16toh(setHardware->sync), 
         setHardware->crc ? CFG_LORA_CRC : 0,
         CFG_LORA_EXPLICIT);
@@ -246,7 +265,7 @@ void kissSetHardware(int packetSize)
         (float)be32toh(setHardware->fskBitRate) / 1e3,
         (float)be32toh(setHardware->fskFreqDev) / 1e3,
         (float)be32toh(setHardware->fskRxBw) / 1e3,
-        (int16_t)be16toh(setHardware->pwr));
+        pwr);
 #endif
     }
   }
